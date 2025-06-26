@@ -1,3 +1,4 @@
+from typing import override
 from django.shortcuts import render
 
 from .serializers import (
@@ -11,12 +12,13 @@ from .serializers import (
     PhotosSerializer,
     RegionSerializer,
     SeedlingSerializer,
+    StatusTypesSerializer,
+    SeedlingTypesSerializer,
 )
 
 from .models import (
     AgroEvent,
     Contract,
-    User,
     Customer,
     District,
     Household,
@@ -24,7 +26,15 @@ from .models import (
     Photos,
     Region,
     Seedling,
+    StatusTypes,
+    SeedlingTypes,
+    CustomUser
+
 )
+# from django.contrib.auth import get_user_model
+
+# User = get_user_model()
+
 
 from rest_framework import viewsets, permissions
 
@@ -33,60 +43,75 @@ from rest_framework import viewsets, permissions
 class AgroEventViewSet(viewsets.ModelViewSet):
     queryset = AgroEvent.objects.all()
     serializer_class = AgroEventSerializer
-    permission_classes = [permissions.IsAuthenticated]
+     
     
 
 
 class ContractViewSet(viewsets.ModelViewSet):
     queryset = Contract.objects.all()
     serializer_class = ContractSerializer
-    permission_classes = [permissions.IsAuthenticated]
+     
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+     
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-    permission_classes = [permissions.IsAuthenticated]
+     
 
 
 class DistrictViewSet(viewsets.ModelViewSet):
     queryset = District.objects.all()
     serializer_class = DistrictSerializer
-    permission_classes = [permissions.IsAuthenticated]
+     
 
 
 class HouseholdViewSet(viewsets.ModelViewSet):
     queryset = Household.objects.all()
     serializer_class = HouseholdSerializer
-    permission_classes = [permissions.IsAuthenticated]
+     
 
 
-class MahallaViewSet(viewsets.ModelViewSet):
-    queryset = Mahalla.objects.all()
+class MahallaViewSet(viewsets.ReadOnlyModelViewSet):
+    # queryset = Mahalla.objects.all()
     serializer_class = MahallaSerializer
-    permission_classes = [permissions.IsAuthenticated]
+     
+
+    @override
+    def get_queryset(self):
+        user = self.request.user
+        return user.binded_mfy.all()
     
 
 
 class PhotosViewSet(viewsets.ModelViewSet):
     queryset = Photos.objects.all()
     serializer_class = PhotosSerializer
-    permission_classes = [permissions.IsAuthenticated]
+     
     
 
 class RegionViewSet(viewsets.ModelViewSet):
     queryset = Region.objects.all()
     serializer_class = RegionSerializer
-    permission_classes = [permissions.IsAuthenticated]
+     
 
 
 class SeedlingViewSet(viewsets.ModelViewSet):
     queryset = Seedling.objects.all()
     serializer_class = SeedlingSerializer
-    permission_classes = [permissions.IsAuthenticated]
+     
+
+class StatusTypesViewSet(viewsets.ModelViewSet):
+    queryset = StatusTypes.objects.all()
+    serializer_class = StatusTypesSerializer
+
+
+class SeedlingTypesViewSet(viewsets.ModelViewSet):
+    queryset = SeedlingTypes.objects.all()
+    serializer_class = SeedlingTypesSerializer
+    

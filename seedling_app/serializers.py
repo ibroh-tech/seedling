@@ -1,9 +1,12 @@
 from rest_framework import serializers
+# from django.contrib.auth import get_user_model
+
+# User = get_user_model()
+
 
 from .models import (
     AgroEvent,
     Contract,
-    User,
     Customer,
     District,
     Household,
@@ -11,12 +14,15 @@ from .models import (
     Photos,
     Region,
     Seedling,
+    StatusTypes,
+    SeedlingTypes,
+    CustomUser
 )
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = "__all__"
 
 
@@ -71,4 +77,14 @@ class RegionSerializer(serializers.ModelSerializer):
 class HouseholdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Household
+        fields = "__all__"
+
+class StatusTypesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StatusTypes
+        fields = "__all__"
+
+class SeedlingTypesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SeedlingTypes
         fields = "__all__"

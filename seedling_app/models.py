@@ -8,7 +8,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import FileExtensionValidator
 from django.utils import timezone
 from django.db.models import CharField, TextField
-# from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser
+
+# from seedling_app.admin import AgroEventAdmin
 
 
 class TimeStampedModel(models.Model):
@@ -74,6 +76,10 @@ class Mahalla(TimeStampedModel):
     def __str__(self):
         return f"{self.name} ({self.parent_district.name})"
 
+class CustomUser(AbstractUser):
+    # Пример нового поля
+    phone_number = models.CharField(max_length=20, blank=True)
+    binded_mfy = models.ManyToManyField(Mahalla, blank=True)
 
 class Household(TimeStampedModel):
     street = CharField(max_length=100)
@@ -82,7 +88,7 @@ class Household(TimeStampedModel):
         Mahalla, on_delete=models.CASCADE, related_name="xonadonlar"
     )
     created_by = models.ForeignKey(
-        User,  # Points to Django's built-in User model
+        CustomUser,  # Points to Django's built-in User model
         on_delete=models.PROTECT,
         related_name="created_households",
     )
@@ -148,25 +154,20 @@ class Contract(TimeStampedModel):
 
 
 class Photos(TimeStampedModel):
-    PHOTO_TYPES = [
-        ("PASSPORT", "Passport Photo"),
-        ("CONTRACT", "Contract Document"),
-        ("SEEDLING", "Seedling Photo"),
-        ("EVENT", "Event Photo"),
-    ]
-
     name = CharField(max_length=255)
-    photo_type = CharField(max_length=20, choices=PHOTO_TYPES, db_index=True)
     image = models.ImageField(
         upload_to="photos/%Y/%m/%d/",
         max_length=255,
         validators=[FileExtensionValidator(["jpg", "jpeg", "png", "gif"])],
     )
-    content_type = models.ForeignKey(
-        ContentType, on_delete=models.CASCADE, related_name="photos"
-    )
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey("content_type", "object_id")
+    attached_to = models.ForeignKey(
+        "AgroEvent", on_delete=models.CASCADE, related_name="photos")
+    
+    # content_type = models.ForeignKey(
+    #     ContentType, on_delete=models.CASCADE, related_name="photos"
+    # )
+    # object_id = models.PositiveIntegerField()
+    # content_object = GenericForeignKey("content_type", "object_id")
 
     class Meta:
         db_table = "Photos"
@@ -174,45 +175,41 @@ class Photos(TimeStampedModel):
         verbose_name_plural = "Photos"
         ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=["photo_type"]),
-            models.Index(fields=["content_type", "object_id"]),
+            # models.Index(fields=["photo_type"]),
+            # models.Index(fields=["object_id"]),
         ]
 
     def __str__(self):
         return self.name
 
+class SeedlingTypes(TimeStampedModel):
+    name = CharField(max_length=255, unique=True, db_index=True)
+
+class StatusTypes(TimeStampedModel):    
+    TYPES = [
+        ("SEEDLING", "Seedling"),
+        ("AGRO_EVENT", "Agro Event"),
+    ]
+    name = CharField(max_length=255, unique=True, db_index=True)
+    status_for = models.CharField(max_length=20, choices=TYPES, db_index=True)
 
 class Seedling(TimeStampedModel):
-    SEEDLING_TYPES = [
-        ("APPLE", "Apple"),
-        ("PEAR", "Pear"),
-        ("CHERRY", "Cherry"),
-        ("APRICOT", "Apricot"),
-    ]
 
-    STATUS_CHOICES = [
-        ("PLANTED", "Planted"),
-        ("GROWING", "Growing"),
-        ("MATURE", "Mature"),
-        ("HARVESTED", "Harvested"),
-        ("DAMAGED", "Damaged"),
-    ]
-
-    type = CharField(max_length=20, choices=SEEDLING_TYPES, db_index=True)
+    seedling_type = models.ForeignKey(
+        SeedlingTypes,
+        on_delete=models.PROTECT,
+        related_name="seedlings",
+        default=1,
+    )
     location = CharField(
         max_length=255, help_text="GPS coordinates or location description"
     )
-    plant_status = CharField(
-        max_length=20, choices=STATUS_CHOICES, default="PLANTED", db_index=True
+    plant_status = models.ForeignKey(
+        StatusTypes,
+        on_delete=models.PROTECT,
+        related_name="seedlings",
     )
     plant_date = models.DateField(auto_now_add=True)
-    foto = models.ForeignKey(
-        Photos,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="seedling_photos",
-    )
     comment = TextField(blank=True)
     parent_contract = models.ForeignKey(
         Contract, on_delete=models.PROTECT, related_name="seedlings"
@@ -224,7 +221,7 @@ class Seedling(TimeStampedModel):
         verbose_name_plural = "Seedlings"
         ordering = ["-plant_date"]
         indexes = [
-            models.Index(fields=["type"]),
+            models.Index(fields=["seedling_type"]),
             models.Index(fields=["plant_status"]),
             models.Index(fields=["plant_date"]),
         ]
@@ -269,3 +266,4 @@ class AgroEvent(TimeStampedModel):
 
     def __str__(self):
         return f"{self.type} - {self.date}"
+

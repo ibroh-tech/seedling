@@ -28,21 +28,31 @@ from seedling_app.views import (
     PhotosViewSet,
     RegionViewSet,
     SeedlingViewSet,
+    StatusTypesViewSet,
+    SeedlingTypesViewSet,
+)
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
 )
 
 router = routers.DefaultRouter()
-router.register(r'agroevents', AgroEventViewSet)
-router.register(r'contracts', ContractViewSet)
-router.register(r'users', UserViewSet)
-router.register(r'customers', CustomerViewSet)
-router.register(r'districts', DistrictViewSet)
-router.register(r'households', HouseholdViewSet)
-router.register(r'mahallas', MahallaViewSet)
-router.register(r'photos', PhotosViewSet)
-router.register(r'regions', RegionViewSet)
-router.register(r'seedlings', SeedlingViewSet)
+# router.register(r'agroevents', AgroEventViewSet)
+# router.register(r'contracts', ContractViewSet)
+# router.register(r'users', UserViewSet)
+# router.register(r'customers', CustomerViewSet)
+# router.register(r'districts', DistrictViewSet)
+# router.register(r'households', HouseholdViewSet)
+router.register(r'mahallas', MahallaViewSet, basename="mahalla")
+# router.register(r'photos', PhotosViewSet)
+# router.register(r'regions', RegionViewSet)
+# router.register(r'seedlings', SeedlingViewSet)
+router.register(r'status_types', StatusTypesViewSet, basename="status_types")
+router.register(r'seedling_types', SeedlingTypesViewSet, basename="seedling_types")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
