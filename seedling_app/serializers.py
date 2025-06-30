@@ -82,9 +82,9 @@ class HouseholdSerializer(serializers.ModelSerializer):
 class StatusTypesSerializer(serializers.ModelSerializer):
     class Meta:
         model = StatusTypes
-        fields = "__all__"
+        fields = ['id', 'name', 'status_for']
 
 class SeedlingTypesSerializer(serializers.ModelSerializer):
     class Meta:
         model = SeedlingTypes
-        fields = "__all__"
+        fields = ['id', 'name']

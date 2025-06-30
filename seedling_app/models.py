@@ -227,7 +227,7 @@ class Seedling(TimeStampedModel):
         ]
 
     def __str__(self):
-        return f"{self.type} ({self.plant_status})"
+        return f"{self.seedling_type} ({self.plant_status})"
 
 
 class AgroEvent(TimeStampedModel):
