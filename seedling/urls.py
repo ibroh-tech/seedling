@@ -31,6 +31,9 @@ from seedling_app.views import (
     StatusTypesViewSet,
     SeedlingTypesViewSet,
     CustomAddRecordView,
+    GetUserView,
+    UserRecordsView,
+    ContractSeedlingsView,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -55,6 +58,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api/add_record/', CustomAddRecordView.as_view(), name='add_record'),
+    path('api/get_user/', GetUserView.as_view(), name='get_user'),
+    path('api/user_records/', UserRecordsView.as_view(), name='user_records'),
+    path('api/contract_seedlings/', ContractSeedlingsView.as_view(), name='contract_seedlings'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

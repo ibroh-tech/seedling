@@ -119,6 +119,28 @@ class SeedlingTypesViewSet(viewsets.ModelViewSet):
     
 class CustomAddRecordView(views.APIView):
     def post(self, request):
+        """ example_request_body
+        {
+            "mahalla_id": 1,
+            "street": "Street",
+            "house_number": "House Number",
+            "fio": "FIO",
+            "passport": "Passport",
+            "birthday": "Birthday",
+            "phone": "Phone",
+            "contract_number": "Contract Number",
+            "contract_date": "Contract Date",
+            "seedlings_list": [
+                {
+                    "seedling_type": 1,
+                    "plant_status": 1,
+                    "plant_date": "Plant Date",
+                    "comment": "Comment"
+                }
+            ]
+        }
+        
+        """
         # Access custom data from request body
         mahalla_id = request.data.get('mahalla_id')
         user_mfy = request.user.binded_mfy.all()
@@ -188,3 +210,44 @@ class CustomAddRecordView(views.APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"message": "Record added successfully"})
+
+class GetUserView(views.APIView):
+    def get(self, request):
+        user = request.user
+        return Response({"user": UserSerializer(user).data['username']})
+
+class UserRecordsView(views.APIView):
+    def get(self, request):
+        user = request.user
+        mahalla_id = request.data.get("mahalla_id")
+        if mahalla_id:
+            mahalla = Mahalla.objects.get(id=mahalla_id)
+            user_records = Household.objects.filter(parent_mfy=mahalla, created_by=user)
+        else:
+            user_records = Household.objects.filter(created_by=user)
+        result_list = []
+        for record in user_records: 
+            customer = Customer.objects.get(parent_household=record)
+            contract = Contract.objects.get(parent_user=customer)
+            result_list.append({
+                "household": HouseholdSerializer(record).data,
+                "customer": CustomerSerializer(customer).data,
+                "contract": ContractSerializer(contract).data,
+            })
+        return Response(result_list)
+
+class ContractSeedlingsView(views.APIView):
+    def get(self, request):
+        user = request.user
+        contract_id = request.data.get("contract_id")
+        if contract_id:
+            contract = Contract.objects.get(id=contract_id)
+            contract_seedlings = Seedling.objects.filter(parent_contract=contract)
+        else:
+            return Response("Contract id is required", status=status.HTTP_400_BAD_REQUEST)
+        result_list = []
+        for seedling in contract_seedlings:
+            result_list.append({
+                "seedling": SeedlingSerializer(seedling).data,
+            })
+        return Response(result_list)

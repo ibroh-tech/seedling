@@ -35,19 +35,19 @@ class AgroEventSerializer(serializers.ModelSerializer):
 class ContractSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contract
-        fields = "__all__"
+        fields = ['id', 'number', 'date']
 
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = "__all__"
+        fields = ['id', 'fio', 'passport', 'birthday', 'phone']
 
 
 class MahallaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mahalla
-        fields = "__all__"
+        fields = ['id', 'name', 'parent_district']
 
 
 class PhotosSerializer(serializers.ModelSerializer):
@@ -77,7 +77,7 @@ class RegionSerializer(serializers.ModelSerializer):
 class HouseholdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Household
-        fields = "__all__"
+        fields = ['id', 'street', 'house', 'parent_mfy', "created_at"]
 
 class StatusTypesSerializer(serializers.ModelSerializer):
     class Meta:
