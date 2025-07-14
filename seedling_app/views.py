@@ -30,7 +30,8 @@ from .models import (
     Seedling,
     StatusTypes,
     SeedlingTypes,
-    CustomUser
+    CustomUser,
+    QrCode,
 
 )
 # from django.contrib.auth import get_user_model
@@ -210,7 +211,7 @@ class CustomAddRecordView(views.APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"message": "Record added successfully"})
-
+    
 class GetUserView(views.APIView):
     def get(self, request):
         user = request.user
@@ -238,8 +239,9 @@ class UserRecordsView(views.APIView):
 
 class ContractSeedlingsView(views.APIView):
     def get(self, request):
+        #TODO: add user check
         user = request.user
-        contract_id = request.data.get("contract_id")
+        contract_id = request.query_params.get("contract_id")
         if contract_id:
             contract = Contract.objects.get(id=contract_id)
             contract_seedlings = Seedling.objects.filter(parent_contract=contract)
@@ -247,7 +249,80 @@ class ContractSeedlingsView(views.APIView):
             return Response("Contract id is required", status=status.HTTP_400_BAD_REQUEST)
         result_list = []
         for seedling in contract_seedlings:
-            result_list.append({
-                "seedling": SeedlingSerializer(seedling).data,
-            })
+            result_list.append(
+                {
+                    "id": seedling.id,
+                    "seedling_type": seedling.seedling_type.name,
+                    "plant_status": seedling.plant_status.name,
+                    "plant_date": seedling.plant_date,
+                    "comment": seedling.comment,
+                }
+            )
         return Response(result_list)
+
+class CheckQRView(views.APIView):
+    def get(self, request):
+        qr_id = request.query_params.get("uuid")
+        try:
+            qr_code = QrCode.objects.get(qr_code=qr_id)
+        except QrCode.DoesNotExist:
+            return Response({"message": "QR code not found", "code": "800"}, status=status.HTTP_400_BAD_REQUEST)
+        except QrCode.MultipleObjectsReturned:
+            return Response({"message": "Multiple QR codes found", "code": "801"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not qr_code.connected_household:
+            return Response({"message": "QR code is free to bind", "code": "700"}, status=status.HTTP_200_OK)
+        elif qr_code.connected_household.created_by != request.user:
+            return Response({"message": "QR code is not connected to your household", "code": "801"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            household = qr_code.connected_household
+            customer = Customer.objects.get(parent_household=household)
+            contract = Contract.objects.get(parent_user=customer)
+            seedlings = Seedling.objects.filter(parent_contract=contract)
+            result_list = []
+            for seedling in seedlings:
+                result_list.append(
+                    {
+                        "id": seedling.id,
+                        "seedling_type": seedling.seedling_type.name,
+                        "plant_status": seedling.plant_status.name,
+                        "plant_date": seedling.plant_date,
+                        "comment": seedling.comment,
+                    }
+                )
+            response = {
+                "message": "QR code is connected to your household",
+                "code": "701",
+                "data": {
+                    "household": HouseholdSerializer(household).data,
+                    "customer": CustomerSerializer(customer).data,
+                    "contract": ContractSerializer(contract).data,
+                    "seedlings": result_list,
+                }
+            }
+            return Response(response, status=status.HTTP_200_OK)
+
+
+class AddAgroEventView(views.APIView):
+    def post(self, request):
+        events_list = request.data.get("events_list")
+        for event in events_list:
+            seedling_id = event.get("seedling_id")
+            seedling = Seedling.objects.get(id=seedling_id)
+            agro_event = AgroEvent.objects.create(
+                parent_seedling=seedling,
+                date=event.get("date"),
+                comment=event.get("comment"),
+            )
+            agro_event.status = StatusTypes.objects.get(id=event.get("status_id"))
+            photo_base64 = event.get("photo").get("base64")
+            photo = base64.b64decode(photo_base64)
+            agro_event.save()
+            photos = Photos.objects.create(
+                attached_to=agro_event,
+                photo=photo,
+            )
+        return Response({"message": "Agro events added successfully"}, status=status.HTTP_200_OK)
+            
+      
+        

@@ -31,9 +31,11 @@ from seedling_app.views import (
     StatusTypesViewSet,
     SeedlingTypesViewSet,
     CustomAddRecordView,
+    AddAgroEventView,
     GetUserView,
     UserRecordsView,
     ContractSeedlingsView,
+    CheckQRView,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -57,10 +59,12 @@ router.register(r'seedling_types', SeedlingTypesViewSet, basename="seedling_type
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('api/add_record/', CustomAddRecordView.as_view(), name='add_record'),
-    path('api/get_user/', GetUserView.as_view(), name='get_user'),
-    path('api/user_records/', UserRecordsView.as_view(), name='user_records'),
-    path('api/contract_seedlings/', ContractSeedlingsView.as_view(), name='contract_seedlings'),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/add_record', CustomAddRecordView.as_view(), name='add_record'),
+    path('api/add_agro_event', AddAgroEventView.as_view(), name='add_agro_event'),
+    path('api/get_user', GetUserView.as_view(), name='get_user'),
+    path('api/user_records', UserRecordsView.as_view(), name='user_records'),
+    path('api/contract_seedlings', ContractSeedlingsView.as_view(), name='contract_seedlings'),
+    path('api/check_qr', CheckQRView.as_view(), name='check_qr'),
+    path('api/token', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
 ]

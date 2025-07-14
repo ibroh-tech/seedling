@@ -12,13 +12,16 @@ from django.contrib.auth.models import AbstractUser
 
 # from seedling_app.admin import AgroEventAdmin
 
-
 class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
+
+
+
+
 
 
 class Region(TimeStampedModel):
@@ -92,8 +95,7 @@ class Household(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name="created_households",
     )
-    qr_id = CharField(max_length=50, unique=True, db_index=True)
-
+    
     class Meta:
         db_table = "Household"
         verbose_name = "Household"
@@ -102,12 +104,19 @@ class Household(TimeStampedModel):
         unique_together = ["street", "house", "parent_mfy"]
         indexes = [
             models.Index(fields=["street", "house"]),
-            models.Index(fields=["qr_id"]),
+            # models.Index(fields=["qr_code"]),
         ]
 
     def __str__(self):
         return f"{self.street}, {self.house}"
 
+
+class QrCode(TimeStampedModel):
+    qr_code = CharField(max_length=255, unique=True, db_index=True)
+    connected_household = models.OneToOneField(
+        Household, on_delete=models.PROTECT, related_name="qr_code", null=True, blank=True
+    )
+    
 
 class Customer(TimeStampedModel):
     fio = CharField(max_length=255)
@@ -185,13 +194,6 @@ class Photos(TimeStampedModel):
 class SeedlingTypes(TimeStampedModel):
     name = CharField(max_length=255, unique=True, db_index=True)
 
-class StatusTypes(TimeStampedModel):    
-    TYPES = [
-        ("SEEDLING", "Seedling"),
-        ("AGRO_EVENT", "Agro Event"),
-    ]
-    name = CharField(max_length=255, unique=True, db_index=True)
-    status_for = models.CharField(max_length=20, choices=TYPES, db_index=True)
 
 class Seedling(TimeStampedModel):
 
@@ -205,7 +207,7 @@ class Seedling(TimeStampedModel):
         max_length=255, help_text="GPS coordinates or location description"
     )
     plant_status = models.ForeignKey(
-        StatusTypes,
+        "StatusTypes",
         on_delete=models.PROTECT,
         related_name="seedlings",
     )
@@ -231,27 +233,15 @@ class Seedling(TimeStampedModel):
 
 
 class AgroEvent(TimeStampedModel):
-    EVENT_TYPES = [
-        ("WATERING", "Watering"),
-        ("FERTILIZING", "Fertilizing"),
-        ("PRUNING", "Pruning"),
-        ("PEST_CONTROL", "Pest Control"),
-        ("HARVEST", "Harvest"),
-        ("OTHER", "Other"),
-    ]
-
-    type = CharField(max_length=20, choices=EVENT_TYPES, db_index=True)
     parent_seedling = models.ForeignKey(
         Seedling, on_delete=models.PROTECT, related_name="agro_events"
     )
     date = models.DateField(auto_now_add=True)
     comment = TextField(blank=True)
-    foto = models.ForeignKey(
-        Photos,
+    status = models.ForeignKey(
+        "StatusTypes",
         on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="event_photos",
+        related_name="agro_events",
     )
 
     class Meta:
@@ -260,10 +250,18 @@ class AgroEvent(TimeStampedModel):
         verbose_name_plural = "Agro Events"
         ordering = ["-date"]
         indexes = [
-            models.Index(fields=["type"]),
+            models.Index(fields=["status"]),
             models.Index(fields=["date", "parent_seedling"]),
         ]
 
     def __str__(self):
-        return f"{self.type} - {self.date}"
+        return f"{self.status} - {self.date}"
 
+
+class StatusTypes(TimeStampedModel):    
+    TYPES = [
+        ("SEEDLING", "Seedling"),
+        ("AGRO_EVENT", "Agro Event"),
+    ]
+    name = CharField(max_length=255, unique=True, db_index=True)
+    status_for = models.CharField(max_length=20, choices=TYPES, db_index=True)
