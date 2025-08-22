@@ -34,11 +34,32 @@ SECRET_KEY = 'django-insecure-88p6lbs_*5canp0!m88v6-d)k$ps#d4t759(e60a+n6^rfv@uf
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 DEBUG = True
 
+# Base URL configuration
+BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000')
 
-
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+# Ensure ALLOWED_HOSTS is properly set
+ALLOWED_HOSTS = ['*'] if DEBUG else os.getenv('ALLOWED_HOSTS', '').split(',')
 
 AUTH_USER_MODEL = 'seedling_app.CustomUser'
+
+# JWT Settings
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
+
+# REST Framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+}
 
 # Application definition
 
@@ -48,10 +69,12 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'drf_yasg',
     'django.contrib.staticfiles',
     'corsheaders',
     'seedling_app',
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 
@@ -137,25 +160,62 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Ensure the favicon is served correctly
+FAVICON_PATH = os.path.join(STATIC_URL, 'favicon.ico')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+# Removed duplicate REST_FRAMEWORK settings
+
+# drf-yasg settings
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'JWT token',
+        }
+    },
+    'SECURITY_REQUIREMENTS': [{
+        'Bearer': []
+    }],
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'DEFAULT_MODEL_RENDERING': 'example',
+    'DEFAULT_API_URL': BASE_URL,
+    'VALIDATOR_URL': None,
+    'DEFAULT_FIELD_INSPECTORS': [
+        'drf_yasg.inspectors.CamelCaseJSONFilter',
+        'drf_yasg.inspectors.InlineSerializerInspector',
+        'drf_yasg.inspectors.RelatedFieldInspector',
+        'drf_yasg.inspectors.ChoiceFieldInspector',
+        'drf_yasg.inspectors.FileFieldInspector',
+        'drf_yasg.inspectors.DictFieldInspector',
+        'drf_yasg.inspectors.SimpleFieldInspector',
+        'drf_yasg.inspectors.StringDefaultFieldInspector',
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+    'DEFAULT_AUTO_SCHEMA_CLASS': 'drf_yasg.inspectors.SwaggerAutoSchema',
+    'DEFAULT_GENERATOR_CLASS': 'drf_yasg.generators.OpenAPISchemaGenerator',
+    'FETCH_SCHEMA_WITH_ANONYMOUS': True,
+    'REFETCH_SCHEMA_WITH_AUTH': True,
+    'REFETCH_SCHEMA_ON_LOGOUT': True,
+    'PERSIST_AUTH': True,
+    'COMPONENT_SPLIT_REQUEST': True,
+}
+
+# ReDoc settings
+REDOC_SETTINGS = {
+    'LAZY_RENDERING': True,
+    'HIDE_HOSTNAME': False,
+    'EXPAND_RESPONSES': '200,201',
+    'PATH_IN_MIDDLE': False,
 }
 
 SIMPLE_JWT = {
@@ -170,10 +230,29 @@ CORS_ALLOW_ALL_ORIGINS = False  # Changed to False to prevent conflicts
 CORS_ALLOW_CREDENTIALS = True
 
 # Specific allowed origins
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  # For development only, restrict in production
+CORS_ALLOW_CREDENTIALS = True
+
+# CORS settings for production (uncomment and adjust as needed)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
     "https://seedling.rshare.io",
-    "http://host.docker.internal"
+    "http://host.docker.internal",
+    "http://localhost:8000"
+]
+
+# Allow Swagger and ReDoc to work with the API
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 # For handling cookies in cross-origin requests
@@ -193,7 +272,8 @@ CORS_ALLOW_HEADERS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:4200",
     "https://seedling.rshare.io",
-    "http://host.docker.internal/"
+    "http://host.docker.internal/",
+    "http://localhost:8000"
 ]
 
 # Session settings for cross-domain cookies

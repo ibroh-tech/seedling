@@ -23,7 +23,7 @@ from .models import (
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = "__all__"
+        fields = ['id', 'username', 'email', 'is_staff', 'is_superuser', 'is_active', 'created_at', 'updated_at']
 
 
 class AgroEventSerializer(serializers.ModelSerializer):

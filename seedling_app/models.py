@@ -21,9 +21,6 @@ class TimeStampedModel(models.Model):
 
 
 
-
-
-
 class Region(TimeStampedModel):
     name = models.CharField(max_length=255, unique=True, db_index=True)
 
@@ -242,6 +239,7 @@ class AgroEvent(TimeStampedModel):
         "StatusTypes",
         on_delete=models.PROTECT,
         related_name="agro_events",
+        default=1,
     )
 
     class Meta:
