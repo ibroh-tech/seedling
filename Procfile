@@ -1,1 +1,1 @@
-"web: gunicorn seedling.wsgi" 
+web: gunicorn seedling_backend.seedling.wsgi
