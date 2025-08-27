@@ -116,12 +116,11 @@ WSGI_APPLICATION = 'seedling.wsgi.application'
 
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL"),
+        default="postgresql://seedling_db_csou_user:KWvew9A1xnaPaVuU3vTolyfZTQ3jLoBp@dpg-d2ndahf5r7bs73febrdg-a.oregon-postgres.render.com/seedling_db_csou",
         conn_max_age=600,
-        ssl_require=True
+        ssl_require=True,
     )
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
