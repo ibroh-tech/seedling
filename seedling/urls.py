@@ -11,6 +11,7 @@ from django.views.generic import RedirectView
 from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from django.conf.urls.static import static
 
 from seedling_app.views import (
     AgroEventViewSet,
@@ -113,3 +114,7 @@ urlpatterns = [
     # Add favicon.ico handler
     path('favicon.ico', RedirectView.as_view(url=settings.STATIC_URL + 'favicon.ico', permanent=True)),
 ]
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
