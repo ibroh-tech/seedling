@@ -1,6 +1,6 @@
 from rest_framework import serializers
 # from django.contrib.auth import get_user_model
-
+from .models import Profile
 # User = get_user_model()
 
 
@@ -88,3 +88,8 @@ class SeedlingTypesSerializer(serializers.ModelSerializer):
     class Meta:
         model = SeedlingTypes
         fields = ['id', 'name']
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['id', 'name', 'image']
