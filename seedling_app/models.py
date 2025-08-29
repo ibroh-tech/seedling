@@ -263,3 +263,7 @@ class StatusTypes(TimeStampedModel):
     ]
     name = CharField(max_length=255, unique=True, db_index=True)
     status_for = models.CharField(max_length=20, choices=TYPES, db_index=True)
+
+class Profile(models.Model):
+    name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='profiles/')
