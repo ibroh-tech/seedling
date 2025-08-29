@@ -12,6 +12,10 @@ from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django.conf.urls.static import static
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import ProfileViewSet
+
 
 from seedling_app.views import (
     AgroEventViewSet,
@@ -59,6 +63,7 @@ schema_view = get_schema_view(
 )
 
 router = routers.DefaultRouter()
+router.register(r'profiles', ProfileViewSet)
 # router.register(r'agroevents', AgroEventViewSet)
 # router.register(r'contracts', ContractViewSet)
 # router.register(r'users', UserViewSet)
@@ -82,6 +87,7 @@ urlpatterns = [
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
     # API Endpoints
+    path('', include(router.urls)),
     path('api/', include(router.urls)),
     path('api/add-record/', CustomAddRecordView.as_view(), name='add-record'),
     path('api/add-agro-event/', AddAgroEventView.as_view(), name='add-agro-event'),
