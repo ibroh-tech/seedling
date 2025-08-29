@@ -8,6 +8,12 @@ from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.views import APIView
+from rest_framework import viewsets
+from .models import Profile
+from .serializers import ProfileSerializer
+
+
+
 
 from .serializers import (
     AgroEventSerializer,
@@ -850,6 +856,9 @@ class SeedlingAgroEventsView(views.APIView):
             return Response({"error": f"Seedling with id {seedling_id} not found"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            
-      
+
+
+class ProfileViewSet(viewsets.ModelViewSet):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
         
