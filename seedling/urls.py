@@ -14,7 +14,7 @@ from drf_yasg import openapi
 from django.conf.urls.static import static
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ProfileViewSet
+from seedling_app.views import ProfileViewSet
 
 
 from seedling_app.views import (
